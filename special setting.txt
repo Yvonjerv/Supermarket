@@ -1,0 +1,128 @@
+SPECIAL DATA
+--------------
+categories table
+2 ="Laundry"
+
+Orders table 
+order_type
+2 ="Laundry"
+3="Delivered_Laundry"
+
+
+_____________________________________________________________________________________________
+UPDATE STOCK 
+
+MERGE INTO items i
+USING(select T_QUANTITY
+, ITEM_ID
+, ENTRY_DATE
+, UNIT_PRICE
+, ITEM_NAME
+, CATEGORY_ID from ITEM_TRANSFERS Where to_char(ENTRY_DATE, 'yyyy-mon-dd')=to_char(sysdate, 'yyyy-mon-dd')) a
+ON (a.item_id=i.item_id)
+WHEN MATCHED THEN
+UPDATE
+set TOTAL_quantity= i.TOTAL_quantity+a.T_QUANTITY,
+ unit_price=a.unit_price
+WHEN NOT MATCHED THEN
+insert  (i.item_id, i.item_name, i.unit_price, i.CATEGORIES_CATEGORY_ID,i.TOTAL_quantity)
+values( a.ITEM_ID , a.ITEM_NAME,  a.UNIT_PRICE, a.CATEGORY_ID, a.T_QUANTITY );
+update ITEM_TRANSFERS
+set status=1;
+commit;
+Insert INTO Stock(ITEM_TRANSFER_ID,
+       ITEM_ID,
+       ITEM_NAME,
+T_QUANTITY,    UNIT_PRICE,
+       ENTRY_DATE,
+       CATEGORY_ID)
+select Stock_seq.nextval,
+       ITEM_ID,
+       ITEM_NAME,
+T_QUANTITY,    UNIT_PRICE,
+       ENTRY_DATE,
+       CATEGORY_ID from ITEM_TRANSFERS;
+commit;
+delete ITEM_TRANSFERS;
+commit;
+
+
+
+
+
+The item_transfers is like a tempory table.
+when you insert into it and run the validate it UPDATE the Items
+, Insert into STOCK Table (to keep records) then delete ITEM_TRANSFERS.
+This to keep the page clean
+Only new entries***
+
+While updating the stock (insert into item_tansfers) the items dat are already 
+in the system will pop up. 
+if new item, it will show no match, you just delete and type the new item's name.
+It will automatically be added to ITEMS and STOCK when you run VALIDATE.
+____________________________________________________________________________
+there is a trigger on the ORDER_items that automatically regulate the quantity (total) on items table
+when the items are sold
+
+
+CREATE OR REPLACE TRIGGER ORDER_items_TRIGGER
+BEFORE INSERT OR UPDATE ON ORDER_items
+FOR EACH ROW
+BEGIN
+update items
+set total_quantity=: Total_quantity-:new.order_items.quantity
+where item_id=:new.ITEMS_ITEM_ID ;
+END;
+
+
+_______________________________________________________________________________
+LAUNDRY CALENDAR 
+
+When the delivery is done( delivered buttom click) it update the order_type to 3(3="Delivered_Laundry")
+
+***********************
+update orders
+set order_type=3
+where order_id=:P64_order_id;
+
+________________________________________________
+Delivered(LAUNDRIES)
+
+the page displays only the laundry orders delivered
+order_type(3="Delivered_Laundry")
+
+
+select ORDER_ID,
+       ORDER_DATE,
+       PAYMENT_TYPE,
+       COMMENT_NAME,
+       ORDER_TYPE
+  from ORDERS
+where ORDER_TYPE =3
+order by 1 desc
+__________________________________________________________________
+
+The laundry master details is on order_type=2 by default.
+
+
+___________________________________________________________________
+
+the Item page contains only the items for sale.
+
+
+
+select 
+"ITEM_ID",
+"ITEM_ID" ITEM_ID_DISPLAY,
+"ITEM_NAME",
+"UNIT_PRICE",
+"CATEGORIES_CATEGORY_ID",
+"ORIGINAL_PRICE",
+"TOTAL_QUANTITY"
+from "#OWNER#"."ITEMS"
+Where CATEGORIES_CATEGORY_ID not in(2)
+
+**********
+2 ="Laundry"
+
+

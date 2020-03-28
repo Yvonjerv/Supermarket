@@ -1,0 +1,20 @@
+Drop TABLE CATEGORIES      cascade;               
+Drop TABLE DEPT         cascade;                    
+Drop TABLE EMP                    cascade;          
+Drop TABLE ITEMS                          cascade;  
+Drop TABLE ITEM_TRANSFERS cascade;  
+Drop TABLE LAUNDRY         cascade;                 
+Drop TABLE NEW_IMPORT1        cascade;              
+Drop TABLE ORDERS          cascade;                 
+Drop TABLE ORDER_ITEMS     cascade;                 
+Drop TABLE SALGRADE       cascade;                  
+Drop TABLE STOCK  cascade; 
+
+
+
+
+  
+    $x_disableItem("f07_" + row_id, true);
+        $x_disableItem("f05_" + row_id, true);
+       $x_disableItem("f08_" + row_id, true);
+   
